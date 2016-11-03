@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="charlie_code" name="interfacer" type="interfacer" output="screen" />
+</launch>
