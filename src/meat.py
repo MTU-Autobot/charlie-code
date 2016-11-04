@@ -1,9 +1,13 @@
 import serial
 import serial.tools.list_ports
 import time
+import sys
 
 TEENSY_VID = 0x16C0
 TEENSY_PID = 0x0483
+
+ENCODER_MSG = 0xA0
+DRIVE_MSG = 0xA4
 
 # find the correct serial port
 teensyPort = ""
@@ -13,19 +17,24 @@ for port in ports:
     pid = port.pid
     if vid == TEENSY_VID and pid == TEENSY_PID:
         teensyPort = port.device
+        print("Interface board found on " + str(teensyPort) + "\n")
         break
+else:
+    # exit program if board not found
+    sys.exit("Interface board not found, exiting!")
 
-with serial.Serial(teensyPort, 115200, timeout=1) as ser:
-    cmd = 2250
+while 1:
+    try:
+        with serial.Serial(teensyPort, 115200, timeout=1) as ser:
+            while 1:
+                ser.write((str(ENCODER_MSG) + '\n').encode())
+                line = ser.readline()
+                print(line.decode())
+                time.sleep(0.01)
 
-    while 1:
-        ser.write((str(cmd) + '\n').encode())
-        line = ser.readline()
-        print(line.decode())
-
-        cmd += 10
-
-        if cmd > 4500:
-            break
-
-        time.sleep(0.1)
+    # handle disconnect exceptions and attempt to reconnect
+    except serial.serialutil.SerialException:
+        #sys.exit("Interface board disconnected!")
+        print("Interface board connection lost!")
+        time.sleep(1)
+        pass
