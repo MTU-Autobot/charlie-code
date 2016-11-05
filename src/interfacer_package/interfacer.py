@@ -1,10 +1,10 @@
 import rospy
 import sys
-from geometry_msgs.msg import Twist
 import serial
 import serial.tools.list_ports
 import time
-import signal
+#import signal
+from geometry_msgs.msg import Twist
 
 TEENSY_VID = 0x16C0
 TEENSY_PID = 0x0483
@@ -16,12 +16,8 @@ DRIVE_MSG = 0xA4
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.linear.x)
 
-def sigint_handler(signum, frame):
-    sys.exit(0)
 
-def listener():
-    signal.signal(signal.SIGINT, sigint_handler)
-
+def findPort():
     # find the correct serial port
     teensyPort = ""
     ports = serial.tools.list_ports.comports()
@@ -31,32 +27,40 @@ def listener():
         if vid == TEENSY_VID and pid == TEENSY_PID:
             teensyPort = port.device
             print("Interface board found on " + str(teensyPort) + "\n")
-            break
-    else:
-        # exit program if board not found
-        sys.exit("Interface board not found, exiting!")
+            return teensyPort
 
+
+def listener():
+    # create node for listening to twist messages
     rospy.init_node('listener', anonymous=True)
-
     rospy.Subscriber("cmd_vel", Twist, callback)
+    rate = rospy.Rate(100)
 
-    while 1:
+    connected = False
+
+    while not rospy.is_shutdown():
         try:
-            with serial.Serial(teensyPort, 115200, timeout=1) as ser:
-                while 1:
-                    ser.write((str(ENCODER_MSG) + '\n').encode())
-                    line = ser.readline()
-                    print(line.decode())
-                    time.sleep(0.01)
+            if not connected:
+                teensyPort = findPort()
+                ser = serial.Serial(teensyPort, 115200, timeout=1)
+                connected = True
+
+            ser.write((str(ENCODER_MSG) + '\n').encode())
+            line = ser.readline()
+            print(line.decode())
+            rate.sleep()
 
         # handle disconnect exceptions and attempt to reconnect
-        except serial.serialutil.SerialException as a:
-            print(a)
-            #sys.exit("Interface board disconnected!")
-            print("Interface board connection lost!")
+        except serial.serialutil.SerialException:
+            connected = False
+            print("Interface board not found, check connection!")
             time.sleep(1)
             pass
 
 
 if __name__ == '__main__':
-    listener()
+    try:
+        listener()
+    except rospy.ROSInterruptException:
+        print("exit pls")
+        pass

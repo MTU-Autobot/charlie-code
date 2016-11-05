@@ -17,7 +17,7 @@ for port in ports:
     pid = port.pid
     if vid == TEENSY_VID and pid == TEENSY_PID:
         teensyPort = port.device
-        print("Interface board found on " + str(teensyPort) + "\n")
+        print("Interface board found on " + str(teensyPort))
         break
 else:
     # exit program if board not found
