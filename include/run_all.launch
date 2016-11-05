@@ -1,0 +1,9 @@
+<launch>
+	<arg name="razor_config_file" default="$(find charlie_code)/config/my_razor.yaml"/>
+  <node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" output="screen">
+    <rosparam file="$(arg razor_config_file)" command="load"/>
+  </node>
+
+	<node pkg="charlie_code" name="interfacer" type="interfacer" output="screen" />
+
+</launch>
