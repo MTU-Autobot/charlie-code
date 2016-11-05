@@ -1,0 +1,7 @@
+#! /usr/bin/env python
+
+import interfacer_package.interfacer
+
+
+if __name__ == '__main__':
+    interfacer_package.interfacer.listener()
