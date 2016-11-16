@@ -101,7 +101,10 @@ def listener():
             print("Interface board not found, check connection!")
             time.sleep(1)
             pass
-
+'''
+def talker():
+    pub = rospy.Publisher('odom', )
+'''
 
 if __name__ == '__main__':
     try:
