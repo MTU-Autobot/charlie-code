@@ -18,6 +18,28 @@ TURN_RADIUS = 0.7239
 PI = math.pi
 TWOPI = math.pi * 2
 
+# left and right wheel encoder position
+leftWheel = 0
+rightWheel = 0
+
+# left and right positions in meters
+leftM = 0.0
+rightM = 0.0
+
+# distance variables
+distance = 0.0
+distanceOld = 0.0
+
+# variables for position from previous call
+lastLeft = 0
+lastRight = 0
+
+# positions
+theta = 0.0
+xPos = 0.0
+yPos = 0.0
+positionVector = [0.0, 0.0, 0.0]
+
 
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.linear.x)
@@ -35,23 +57,7 @@ def findPort():
             print("Interface board found on " + str(teensyPort) + "\n")
             return teensyPort
 
-# left and right wheel encoder position
-leftWheel = 0
-rightWheel = 0
-# left and right positions in meters
-leftM = 0.0
-rightM = 0.0
-# distance variables
-distance = 0.0
-distanceOld = 0.0
-# variables for position from previous call
-lastLeft = 0
-lastRight = 0
-# positions
-theta = 0.0
-xPos = 0.0
-yPos = 0.0
-positionVector = [0.0, 0.0, 0.0]
+
 def calculatePosition(leftVal, rightVal):
     # calculate positions
     rightWheel = rightVal
@@ -74,6 +80,7 @@ def calculatePosition(leftVal, rightVal):
     yPos += (distance - distanceOld) * math.sin(theta)
     positionVector = [xPos, yPos, 0]
 
+
 def listener():
     # create node for listening to twist messages
     rospy.init_node('listener', anonymous=True)
@@ -88,10 +95,10 @@ def listener():
                 teensyPort = findPort()
                 ser = serial.Serial(teensyPort, 115200, timeout=1)
                 connected = True
-
-            ser.write((str(ENCODER_MSG) + '\n').encode())
-            line = ser.readline()
-            line.decode()
+            else:
+                ser.write((str(ENCODER_MSG) + '\n').encode())
+                line = ser.readline()
+                line.decode()
 
             rate.sleep()
 
