@@ -4,7 +4,8 @@ import serial
 import serial.tools.list_ports
 import time
 import math
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point, Quaternion
+from nav_msgs.msg import Odometry
 
 TEENSY_VID = 0x16C0
 TEENSY_PID = 0x0483
@@ -41,7 +42,7 @@ yPos = 0.0
 positionVector = [0.0, 0.0, 0.0]
 
 
-def callback(data):
+def twistCallback(data):
     rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.linear.x)
 
 
@@ -76,15 +77,20 @@ def calculatePosition(leftVal, rightVal):
     while theta <= -PI:
         theta += TWOPI
 
+    # create position vector
     xPos += (distance - distanceOld) * math.cos(theta)
     yPos += (distance - distanceOld) * math.sin(theta)
     positionVector = [xPos, yPos, 0]
 
+    #update previous values
+    lastRight = rightWheel
+    lastLeft = leftWheel
 
-def listener():
+
+def twistListener():
     # create node for listening to twist messages
-    rospy.init_node('listener', anonymous=True)
-    rospy.Subscriber("cmd_vel", Twist, callback)
+    rospy.init_node("interfacer")
+    rospy.Subscriber("cmd_vel", Twist, twistCallback)
     rate = rospy.Rate(100)
 
     connected = False
@@ -92,10 +98,12 @@ def listener():
     while not rospy.is_shutdown():
         try:
             if not connected:
+                # connect to the serial port that the interface board is on
                 teensyPort = findPort()
                 ser = serial.Serial(teensyPort, 115200, timeout=1)
                 connected = True
             else:
+                # send request for encoder data and process the return
                 ser.write((str(ENCODER_MSG) + '\n').encode())
                 line = ser.readline()
                 line.decode()
@@ -108,12 +116,22 @@ def listener():
             print("Interface board not found, check connection!")
             time.sleep(1)
             pass
-'''
-def talker():
-    pub = rospy.Publisher('odom', )
-'''
 
-if __name__ == '__main__':
+def odomPublisher():
+    pub = rospy.Publisher("/odom", Odometry)
+    frame_id = "/odom"
+    child_frame_id = "/base_footprint"
+
+    # build odometry message
+    # http://answers.ros.org/question/79851/python-odometry/
+    msg = Odometry()
+    msg.header.stamp = rospy.Time.now()
+    msg.header.frame_id = frame_id
+    msg.child_frame_id = child_frame_id
+    msg.pose.pose.position = Point(positionVector[0], positionVector[1], positionVector[2])
+    #msg.pose.pose.orientation = Quaternion(*)
+
+if __name__ == "__main__":
     try:
         listener()
     except rospy.ROSInterruptException:
