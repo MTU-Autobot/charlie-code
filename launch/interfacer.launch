@@ -1,3 +1,3 @@
 <launch>
-	<node pkg="charlie_code" name="interfacer" type="interfacer" output="screen" />
+	<node pkg="charlie_code" name="interfacer" type="interfacer.py" output="screen" />
 </launch>

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 import sys
 import serial
@@ -133,7 +135,7 @@ def odomPublisher():
 
 if __name__ == "__main__":
     try:
-        listener()
+        twistListener()
     except rospy.ROSInterruptException:
         print("exit pls")
         pass
