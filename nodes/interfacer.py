@@ -119,6 +119,7 @@ def twistListener():
             time.sleep(1)
             pass
 
+
 def odomPublisher():
     pub = rospy.Publisher("/odom", Odometry)
     frame_id = "/odom"
@@ -132,6 +133,7 @@ def odomPublisher():
     msg.child_frame_id = child_frame_id
     msg.pose.pose.position = Point(positionVector[0], positionVector[1], positionVector[2])
     #msg.pose.pose.orientation = Quaternion(*)
+
 
 if __name__ == "__main__":
     try:
