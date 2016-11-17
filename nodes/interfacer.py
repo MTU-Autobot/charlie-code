@@ -6,7 +6,9 @@ import serial
 import serial.tools.list_ports
 import time
 import math
-from geometry_msgs.msg import Twist, Point, Quaternion
+import re
+import tf
+from geometry_msgs.msg import Twist, Point, Quaternion, TransformStamped
 from nav_msgs.msg import Odometry
 
 TEENSY_VID = 0x16C0
@@ -21,27 +23,25 @@ TURN_RADIUS = 0.7239
 PI = math.pi
 TWOPI = math.pi * 2
 
-# left and right wheel encoder position
-leftWheel = 0
-rightWheel = 0
+PreviousLeftEncoderCounts = 0
+PreviousRightEncoderCounts = 0
+current_time_encoder = None
+last_time_encoder = None
+DistancePerCount = (TWOPI * TURN_RADIUS) / CNTS_PER_REV_WHEEL
 
-# left and right positions in meters
-leftM = 0.0
-rightM = 0.0
+x = 0.0
+y = 0.0
 
-# distance variables
-distance = 0.0
-distanceOld = 0.0
+vx = 0.0
+vy = 0.0
+deltaLeft = 0.0
+deltaRight = 0.0
 
-# variables for position from previous call
-lastLeft = 0
-lastRight = 0
+linear_encoder = 0.0
+angular_encoder = 0.0
 
-# positions
-theta = 0.0
-xPos = 0.0
-yPos = 0.0
-positionVector = [0.0, 0.0, 0.0]
+heading = 0.0
+heading_old = 0.0
 
 
 def twistCallback(data):
@@ -61,41 +61,74 @@ def findPort():
             return teensyPort
 
 
-def calculatePosition(leftVal, rightVal):
-    # calculate positions
-    rightWheel = rightVal
-    rightM -= (rightWheel - lastRight) / CNTS_PER_REV_WHEEL
-    leftWheel = leftVal
-    leftM += (leftWheel - lastLeft) / CNTS_PER_REV_WHEEL
+def wheel_callback(left_wheel, right_wheel):
+    global current_time_encoder
+    global vx
+    global vy
+    global PreviousLeftEncoderCounts
+    global PreviousRightEncoderCounts
+    global last_time_encoder
+    global linear_encoder
+    global angular_encoder
+    global heading
+    global heading_old
+    global x
+    global y
 
-    # update distances
-    distanceOld = distance
-    distance = (rightM + leftM) / 2
+    current_time_encoder = rospy.get_rostime()
 
-    # calculate angle of rotation
-    theta = (rightM - leftM) / TURN_RADIUS
-    while theta >= PI:
-        theta -= TWOPI
-    while theta <= -PI:
-        theta += TWOPI
+    delta_left = left_wheel - PreviousLeftEncoderCounts
+    delta_right = right_wheel - PreviousRightEncoderCounts
 
-    # create position vector
-    xPos += (distance - distanceOld) * math.cos(theta)
-    yPos += (distance - distanceOld) * math.sin(theta)
-    positionVector = [xPos, yPos, 0]
+    left_wheel_est_vel = delta_left * DistancePerCount
+    right_wheel_est_vel = delta_right * DistancePerCount
 
-    #update previous values
-    lastRight = rightWheel
-    lastLeft = leftWheel
+    linear_encoder  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5
+    angular_encoder = (right_wheel_est_vel - left_wheel_est_vel) / 0.673
+
+    if angular_encoder < 0.000001:
+        direction = heading + angular_encoder * 0.5;
+        x += linear_encoder * math.cos(direction);
+        y += linear_encoder * math.sin(direction);
+        heading += angular_encoder;
+    else:
+        heading_old = heading
+        r = linear_encoder / angular_encoder
+        heading += angular_encoder
+        x += r * (math.sin(heading) - math.sin(heading_old))
+        x += r * (math.cos(heading) - math.cos(heading_old))
+
+    print 'X: ' + str(x) + '\tY: ' + str(y) + '\theading: ' + str(heading)
+
+    # Update old values
+    PreviousLeftEncoderCounts = left_wheel
+    PreviousRightEncoderCounts = right_wheel
+    last_time_encoder = current_time_encoder
 
 
 def twistListener():
+    global x
+    global y
+    global th
+    global vx
+    global vy
+    global vth
+
     # create node for listening to twist messages
     rospy.init_node("interfacer")
     rospy.Subscriber("cmd_vel", Twist, twistCallback)
     rate = rospy.Rate(100)
 
+    pub = rospy.Publisher("/odom", Odometry)
+    frame_id = "/odom"
+    child_frame_id = "/base_footprint"
+
+    #odom_broadcaster = tf.TransformBroadcaster()
+
     connected = False
+
+    current_time = rospy.get_rostime()
+    last_time = rospy.get_rostime()
 
     while not rospy.is_shutdown():
         try:
@@ -109,6 +142,28 @@ def twistListener():
                 ser.write((str(ENCODER_MSG) + '\n').encode())
                 line = ser.readline()
                 line.decode()
+                if len(line) > 10:
+                    current_time = rospy.get_rostime()
+                    encoders = re.split(r'\t+', line)
+                    print encoders
+                    wheel_callback(int(encoders[1]), int(encoders[2]))
+
+                    msg = Odometry()
+                    msg.header.stamp = current_time
+                    msg.header.frame_id = "odom"
+                    msg.child_frame_id = "base_link"
+
+                    msg.pose.pose.position = Point(x, y, 0.0)
+                    q = tf.transformations.quaternion_from_euler(0, 0, heading)
+                    msg.pose.pose.orientation = Quaternion(*q)
+                    #msg.twist.twist.linear = Point(vx, vy, 0.0)
+                    #msg.twist.twist.angular.x = 0.0
+                    #msg.twist.twist.angular.y = 0.0
+                    #msg.twist.twist.angular.z = vth
+
+                    pub.publish(msg)
+
+                    last_time = current_time
 
             rate.sleep()
 
@@ -121,10 +176,6 @@ def twistListener():
 
 
 def odomPublisher():
-    pub = rospy.Publisher("/odom", Odometry)
-    frame_id = "/odom"
-    child_frame_id = "/base_footprint"
-
     # build odometry message
     # http://answers.ros.org/question/79851/python-odometry/
     msg = Odometry()
