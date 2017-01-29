@@ -22,6 +22,9 @@ CNTS_PER_REV_WHEEL = 512 * 4 * 20
 TURN_RADIUS = 0.7239
 PI = math.pi
 TWOPI = math.pi * 2
+# distance in meters
+WHEEL_SEPARATION = 0.6731
+WHEEL_RADIUS = 0.3683
 
 PreviousLeftEncoderCounts = 0
 PreviousRightEncoderCounts = 0
@@ -45,7 +48,17 @@ heading_old = 0.0
 
 
 def twistCallback(data):
-    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.linear.x)
+    rospy.loginfo("Received a /cmd_vel message!")
+    rospy.loginfo("Linear Components: [%f, %f, %f]"%(data.linear.x, data.linear.y, data.linear.z))
+    rospy.loginfo("Angular Components: [%f, %f, %f]"%(data.angular.x, data.angular.y, data.angular.z))
+
+    # get linear x and angular z for drive info
+    velocity = data.linear.x
+    turn  = data.angular.z
+
+    # calculate wheel velocities
+    leftVelocity = (velocity - turn * WHEEL_SEPARATION / 2.0) / WHEEL_RADIUS
+    rightVelocity = (velocity + turn * WHEEL_SEPARATION / 2.0) / WHEEL_RADIUS
 
 
 def findPort():
@@ -59,6 +72,11 @@ def findPort():
             teensyPort = port.device
             print("Interface board found on " + str(teensyPort) + "\n")
             return teensyPort
+
+
+def sendDriveMessage(leftVal, rightVal):
+    # send the drive command to get interface board ready
+    ser.write((str(DRIVE_MSG) + '\n').encode())
 
 
 def wheel_callback(left_wheel, right_wheel):
@@ -142,6 +160,7 @@ def twistListener():
                 ser.write((str(ENCODER_MSG) + '\n').encode())
                 line = ser.readline()
                 line.decode()
+
                 if len(line) > 10:
                     current_time = rospy.get_rostime()
                     encoders = re.split(r'\t+', line)
