@@ -19,7 +19,6 @@ DRIVE_MSG = 0xA4
 
 # encoders are 512 counts per revolution, 4 pulses per count. 20:1 gearbox
 CNTS_PER_REV_WHEEL = 512 * 4 * 20
-TURN_RADIUS = 0.7239
 PI = math.pi
 TWOPI = math.pi * 2
 # distance in meters
@@ -30,7 +29,7 @@ PreviousLeftEncoderCounts = 0
 PreviousRightEncoderCounts = 0
 current_time_encoder = None
 last_time_encoder = None
-DistancePerCount = (TWOPI * TURN_RADIUS) / CNTS_PER_REV_WHEEL
+DistancePerCount = (TWOPI * WHEEL_RADIUS) / CNTS_PER_REV_WHEEL
 
 x = 0.0
 y = 0.0
