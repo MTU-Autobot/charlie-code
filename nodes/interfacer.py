@@ -23,7 +23,7 @@ PI = math.pi
 TWOPI = math.pi * 2
 # distance in meters
 WHEEL_SEPARATION = 0.6731
-WHEEL_RADIUS = 0.3683
+WHEEL_RADIUS = 0.381
 
 PreviousLeftEncoderCounts = 0
 PreviousRightEncoderCounts = 0
