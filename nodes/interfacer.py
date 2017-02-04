@@ -101,7 +101,7 @@ def wheel_callback(left_wheel, right_wheel):
     right_wheel_est_vel = delta_right * DistancePerCount
 
     linear_encoder  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5
-    angular_encoder = (right_wheel_est_vel - left_wheel_est_vel) / 0.673
+    angular_encoder = (right_wheel_est_vel - left_wheel_est_vel) / WHEEL_SEPARATION
 
     if angular_encoder < 0.000001:
         direction = heading + angular_encoder * 0.5;
