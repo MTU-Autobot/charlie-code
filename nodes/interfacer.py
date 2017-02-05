@@ -108,20 +108,6 @@ def wheel_callback(left_wheel, right_wheel):
     y += linear_encoder * math.sin(direction);
     heading += angular_encoder;
 
-    '''if angular_encoder < 0.000001:
-        direction = heading + angular_encoder * 0.5;
-        x += linear_encoder * math.cos(direction);
-        y += linear_encoder * math.sin(direction);
-        heading += angular_encoder;
-        print("right")
-    else:
-        heading_old = heading
-        r = linear_encoder / angular_encoder
-        heading += angular_encoder
-        x += r * (math.sin(heading) - math.sin(heading_old))
-        x += r * (math.cos(heading) - math.cos(heading_old))
-        print("left")'''
-
     print 'X: ' + str(x) + '\tY: ' + str(y) + '\theading: ' + str(heading)
 
     # Update old values
