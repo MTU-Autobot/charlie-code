@@ -23,7 +23,7 @@ PI = math.pi
 TWOPI = math.pi * 2
 # distance in meters
 WHEEL_SEPARATION = 0.6731
-WHEEL_RADIUS = 0.381
+WHEEL_RADIUS = 0.371475
 
 PreviousLeftEncoderCounts = 0
 PreviousRightEncoderCounts = 0
@@ -110,14 +110,12 @@ def wheel_callback(left_wheel, right_wheel):
         x += linear_encoder * math.cos(direction);
         y += linear_encoder * math.sin(direction);
         heading += angular_encoder;
-        count << "right" << endl;
     else:
         heading_old = heading
         r = linear_encoder / angular_encoder
         heading += angular_encoder
         x += r * (math.sin(heading) - math.sin(heading_old))
         x += r * (math.cos(heading) - math.cos(heading_old))
-        count << "left" << endl;
 
     print 'X: ' + str(x) + '\tY: ' + str(y) + '\theading: ' + str(heading)
 
