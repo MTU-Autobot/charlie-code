@@ -23,7 +23,7 @@ PI = math.pi
 TWOPI = math.pi * 2
 # distance in meters
 WHEEL_SEPARATION = 0.6731
-WHEEL_RADIUS = 0.371475
+WHEEL_RADIUS = 0.381
 
 PreviousLeftEncoderCounts = 0
 PreviousRightEncoderCounts = 0
@@ -103,19 +103,19 @@ def wheel_callback(left_wheel, right_wheel):
     linear_encoder  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5
     angular_encoder = (right_wheel_est_vel - left_wheel_est_vel) / WHEEL_SEPARATION
 
-
-
     if angular_encoder < 0.000001:
         direction = heading + angular_encoder * 0.5;
         x += linear_encoder * math.cos(direction);
         y += linear_encoder * math.sin(direction);
         heading += angular_encoder;
+        cout << "right" << endl
     else:
         heading_old = heading
         r = linear_encoder / angular_encoder
         heading += angular_encoder
         x += r * (math.sin(heading) - math.sin(heading_old))
         x += r * (math.cos(heading) - math.cos(heading_old))
+        cout << "left" << endl
 
     print 'X: ' + str(x) + '\tY: ' + str(y) + '\theading: ' + str(heading)
 
