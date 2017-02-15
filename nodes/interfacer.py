@@ -129,7 +129,7 @@ def twistListener():
     rospy.Subscriber("cmd_vel", Twist, twistCallback)
     rate = rospy.Rate(100)
 
-    pub = rospy.Publisher("/odom", Odometry)
+    pub = rospy.Publisher("/odom", Odometry, queue_size=10)
     frame_id = "/odom"
     child_frame_id = "/base_footprint"
 
