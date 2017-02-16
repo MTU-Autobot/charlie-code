@@ -19,18 +19,17 @@ DRIVE_MSG = 0xA4
 
 # encoders are 512 counts per revolution, 4 pulses per count. 20:1 gearbox
 CNTS_PER_REV_WHEEL = 512 * 4 * 20
-TURN_RADIUS = 0.7239
 PI = math.pi
 TWOPI = math.pi * 2
 # distance in meters
 WHEEL_SEPARATION = 0.6731
-WHEEL_RADIUS = 0.3683
+WHEEL_RADIUS = 0.371475
 
 PreviousLeftEncoderCounts = 0
 PreviousRightEncoderCounts = 0
 current_time_encoder = None
 last_time_encoder = None
-DistancePerCount = (TWOPI * TURN_RADIUS) / CNTS_PER_REV_WHEEL
+DistancePerCount = (TWOPI * WHEEL_RADIUS) / CNTS_PER_REV_WHEEL
 
 # global vars for speed
 globalLeftVelocity = 2047
@@ -117,19 +116,12 @@ def wheel_callback(left_wheel, right_wheel):
     right_wheel_est_vel = delta_right * DistancePerCount
 
     linear_encoder  = (right_wheel_est_vel + left_wheel_est_vel) * 0.5
-    angular_encoder = (right_wheel_est_vel - left_wheel_est_vel) / 0.673
+    angular_encoder = (right_wheel_est_vel - left_wheel_est_vel) / WHEEL_SEPARATION
 
-    if angular_encoder < 0.000001:
-        direction = heading + angular_encoder * 0.5;
-        x += linear_encoder * math.cos(direction);
-        y += linear_encoder * math.sin(direction);
-        heading += angular_encoder;
-    else:
-        heading_old = heading
-        r = linear_encoder / angular_encoder
-        heading += angular_encoder
-        x += r * (math.sin(heading) - math.sin(heading_old))
-        x += r * (math.cos(heading) - math.cos(heading_old))
+    direction = heading + angular_encoder * 0.5;
+    x += linear_encoder * math.cos(direction);
+    y += linear_encoder * math.sin(direction);
+    heading += angular_encoder;
 
     print 'X: ' + str(x) + '\tY: ' + str(y) + '\theading: ' + str(heading)
 
@@ -152,7 +144,7 @@ def twistListener():
     rospy.Subscriber("cmd_vel", Twist, twistCallback)
     rate = rospy.Rate(100)
 
-    pub = rospy.Publisher("/odom", Odometry)
+    pub = rospy.Publisher("/odom", Odometry, queue_size=10)
     frame_id = "/odom"
     child_frame_id = "/base_footprint"
 
