@@ -32,6 +32,10 @@ current_time_encoder = None
 last_time_encoder = None
 DistancePerCount = (TWOPI * TURN_RADIUS) / CNTS_PER_REV_WHEEL
 
+# global vars for speed
+globalLeftVelocity = 2047
+globalRightVelocity = 2047
+
 x = 0.0
 y = 0.0
 
@@ -47,7 +51,20 @@ heading = 0.0
 heading_old = 0.0
 
 
+def map(value, fromLow, fromHigh, toLow, toHigh):
+    # figure out width of each range
+    fromSpan = fromHigh - fromLow
+    toSpan = toHigh - toLow
+    # convert left range into 0-1
+    valueScaled = float(value - fromLow) / float(fromSpan)
+    # convert 0-1 to a value in to range
+    return toLow + (valueScaled * toSpan)
+
+
 def twistCallback(data):
+    global globalLeftVelocity
+    global globalRightVelocity
+
     rospy.loginfo("Received a /cmd_vel message!")
     rospy.loginfo("Linear Components: [%f, %f, %f]"%(data.linear.x, data.linear.y, data.linear.z))
     rospy.loginfo("Angular Components: [%f, %f, %f]"%(data.angular.x, data.angular.y, data.angular.z))
@@ -59,6 +76,9 @@ def twistCallback(data):
     # calculate wheel velocities
     leftVelocity = (velocity - turn * WHEEL_SEPARATION / 2.0) / WHEEL_RADIUS
     rightVelocity = (velocity + turn * WHEEL_SEPARATION / 2.0) / WHEEL_RADIUS
+    # remap values to ints for sending
+    globalLeftVelocity = int(map(leftVelocity, -3.0, 3.0, 0, 4095))
+    globalRightVelocity = int(map(rightVelocity, -3.0, 3.0, 0, 4095))
 
 
 def findPort():
@@ -72,11 +92,6 @@ def findPort():
             teensyPort = port.device
             print("Interface board found on " + str(teensyPort) + "\n")
             return teensyPort
-
-
-def sendDriveMessage(leftVal, rightVal):
-    # send the drive command to get interface board ready
-    ser.write((str(DRIVE_MSG) + '\n').encode())
 
 
 def wheel_callback(left_wheel, right_wheel):
@@ -164,7 +179,7 @@ def twistListener():
                 if len(line) > 10:
                     current_time = rospy.get_rostime()
                     encoders = re.split(r'\t+', line)
-                    print encoders
+                    # print encoders
                     wheel_callback(int(encoders[1]), int(encoders[2]))
 
                     msg = Odometry()
@@ -180,7 +195,10 @@ def twistListener():
                     #msg.twist.twist.angular.y = 0.0
                     #msg.twist.twist.angular.z = vth
 
+                    # publish odometry and send drive command
                     pub.publish(msg)
+                    ser.write((str(DRIVE_MSG) + "\n").encode())
+                    ser.write((str(globalLeftVelocity) + "\t" + str(globalRightVelocity) + "\n").encode())
 
                     last_time = current_time
 
