@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find charlie_code)/include/zed.launch"/>
+  <include file="$(find charlie_code)/include/rtab_map.launch"/>
+  <include file="$(find charlie_code)/include/interfacer.launch"/>
+  <include file="$(find charlie_code)/include/move_base.launch"/>
+</launch>
