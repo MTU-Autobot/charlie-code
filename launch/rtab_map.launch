@@ -1,8 +1,8 @@
 <launch>
   <include file="$(find rtabmap_ros)/include/rgbd_mapping.launch">
-    <param name="rtabmap_args" value="--delete_db_on_start"/>
-    <param name="depth_registered_topic" value="/camera/depth/image_rect_color"/>
-    <param name="rviz" value="false"/>
-    <param name="rtabmapviz" value="false"/>
+    <arg name="rtabmap_args" value="--delete_db_on_start"/>
+    <arg name="depth_registered_topic" value="/camera/depth/image_rect_color"/>
+    <arg name="rviz" value="false"/>
+    <arg name="rtabmapviz" value="false"/>
   </include>
 </launch>
