@@ -7,3 +7,9 @@
 - git:
     local-name: ublox
     uri: https://github.com/KumarRobotics/ublox.git
+- git:
+    local-name: razor_imu_9dof
+    uri: https://github.com/KristofRobot/razor_imu_9dof.git
+- git
+    local-name: zed_wrapper
+    uri: https://github.com/stereolabs/zed-ros-wrapper.git
