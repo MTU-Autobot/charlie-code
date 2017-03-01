@@ -1,5 +1,5 @@
 <launch>
-	<node pkg="tf" type="static_transform_publisher" name="imu_broadcaster" args="1 0 0 0 0 0 1 base_link imu_link 100" />
+	<node pkg="tf" type="static_transform_publisher" name="imu_broadcaster" args="1 0 0 0 0 0 1 base_link imu_link 100"/>
 	<arg name="razor_config_file" default="$(find charlie_code)/config/my_razor.yaml"/>
 	<node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" output="screen">
 		<rosparam file="$(arg razor_config_file)" command="load"/>
