@@ -26,3 +26,7 @@ To access the Razor IMU over USB, you may need to add yourself to the dialout gr
 ```bash
 sudo adduser ${USER} dialout
 ```
+
+# Interface Board
+
+To interface with the board you need to setup the udev rules found [here](https://www.pjrc.com/teensy/loader_linux.html)
