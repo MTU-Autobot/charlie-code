@@ -1,0 +1,50 @@
+<robot name="charlie">
+    <link name="base_link">
+        <joint name="base_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="chassis"/>
+        </joint>
+        <visual>
+            <geometry>
+                <box size="1 0.5 0.5"/>
+            </geometry>
+            <material name="green">
+                <color rgba="0 1 0 0.5"/>
+            </material>
+        </visual>
+    </link>
+
+    <link name="right_wheel">
+        <visual>
+            <geometry>
+                <cylinder length="0.05" radius="0.5"/>
+            </geometry>
+            <material name="dark">
+                <color rgba="0 0 0 0.5"/>
+            </material>
+        </visual>
+    </link>
+
+    <link name="left_wheel">
+        <visual>
+            <geometry>
+                <cylinder length="0.05" radius="0.5"/>
+            </geometry>
+            <material name="dark">
+                <color rgba="0 0 0 0.5"/>
+            </material>
+        </visual>
+    </link>
+
+    <joint name="base_to_right_Wheel" type="fixed">
+        <parent link="base_link"/>
+        <child link="right_wheel"/>
+        <origin rpy="1.57075 0 0" xyz="0.25 -0.4 0"/>
+    </joint>
+
+    <joint name="base_to_left_Wheel" type="fixed">
+        <parent link="base_link"/>
+        <child link="left_wheel"/>
+        <origin rpy="1.57075 0 0" xyz="0.25 0.4 0"/>
+    </joint>
+</robot>

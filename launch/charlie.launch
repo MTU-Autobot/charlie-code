@@ -1,6 +1,8 @@
 <launch>
-  <include file="$(find charlie_code)/launch/zed.launch"/>
-  <include file="$(find charlie_code)/launch/rtab_map.launch"/>
   <include file="$(find charlie_code)/launch/interfacer.launch"/>
+  <!-- <include file="$(find charlie_code)/launch/imu.launch"/> -->
+  <!-- <include file="$(find charlie_code)/launch/robot_pose_ekf.launch"/> -->
+  <!-- <include file="$(find charlie_code)/launch/zed.launch"/> -->
+  <!-- <include file="$(find charlie_code)/launch/rtab_map.launch"/> -->
   <include file="$(find charlie_code)/launch/move_base.launch"/>
 </launch>

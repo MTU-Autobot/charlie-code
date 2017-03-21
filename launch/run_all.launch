@@ -1,5 +1,0 @@
-<launch>
-	<include file="$(find charlie_code)/include/imu.launch"/>
-	<include file="$(find charlie_code)/include/interfacer.launch"/>
-	<include file="$(find charlie_code)/include/robot_pose_ekf.launch"/>
-</launch>

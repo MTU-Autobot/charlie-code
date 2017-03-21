@@ -146,7 +146,7 @@ def twistListener():
 
     pub = rospy.Publisher("/odom", Odometry, queue_size=10)
     frame_id = "/odom"
-    child_frame_id = "/base_footprint"
+    child_frame_id = "/base_link"
 
     #odom_broadcaster = tf.TransformBroadcaster()
 
