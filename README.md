@@ -30,3 +30,16 @@ sudo adduser ${USER} dialout
 # Interface Board
 
 To interface with the board you need to setup the udev rules found [here](https://www.pjrc.com/teensy/loader_linux.html)
+
+# Networking
+
+The robot has the static IP address ```141.219.120.14``` on Michigan Techs network
+
+Add the robot to your ```\etc\hosts``` file with the lines
+
+```
+# Autobot Charlie
+141.219.120.14 charlie
+```
+
+This will let you SSH into the robot by using ```ssh ubuntu@charlie``` instead of ```ssh ubuntu@141.219.120.14```
