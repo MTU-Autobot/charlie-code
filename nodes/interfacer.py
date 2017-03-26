@@ -10,6 +10,9 @@ import re
 import tf
 from geometry_msgs.msg import Twist, Point, Quaternion, TransformStamped
 from nav_msgs.msg import Odometry
+from tf.broadcaster import TransformBroadcaster
+from math import sin, cos, pi, ceil
+
 
 TEENSY_VID = 0x16C0
 TEENSY_PID = 0x0483
@@ -48,6 +51,65 @@ angular_encoder = 0.0
 
 heading = 0.0
 heading_old = 0.0
+
+
+class OdometryPub:
+    def __init__(self):
+        self.base_frame_id = 'base_link' # the name of the base frame of the robot
+        self.odom_frame_id = 'odom' # the name of the odometry reference frame
+
+        # internal data
+        self.x = 0                  # position in xy plane
+        self.y = 0
+        self.th = 0
+        self.then = 0
+
+        self.odomPub = rospy.Publisher("/odom", Odometry,queue_size=10)
+        self.odomBroadcaster = TransformBroadcaster()
+
+    def update(self):
+        global x
+        global y
+        global vx
+        global vy
+        global heading
+        global heading_old
+
+        if(self.then == 0):
+            self.then = rospy.Time.now()
+            return
+
+        now = rospy.Time.now()
+        elapsed = now - self.then
+        self.then = now
+        elapsed = elapsed.to_sec()
+
+        # publish the odom information
+        quaternion = Quaternion()
+        quaternion.x = 0.0
+        quaternion.y = 0.0
+        quaternion.z = sin( heading / 2 )
+        quaternion.w = cos( heading / 2 )
+        self.odomBroadcaster.sendTransform(
+            (x, y, 0),
+            (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
+            rospy.Time.now(),
+            self.base_frame_id,
+            self.odom_frame_id
+        )
+
+        odom = Odometry()
+        odom.header.stamp = now
+        odom.header.frame_id = self.odom_frame_id
+        odom.pose.pose.position.x = x
+        odom.pose.pose.position.y = y
+        odom.pose.pose.position.z = 0
+        odom.pose.pose.orientation = quaternion
+        odom.child_frame_id = self.base_frame_id
+        odom.twist.twist.linear.x = vx
+        odom.twist.twist.linear.y = 0
+        odom.twist.twist.angular.z = heading - heading_old
+        self.odomPub.publish(odom)
 
 
 def map(value, fromLow, fromHigh, toLow, toHigh):
@@ -144,11 +206,13 @@ def twistListener():
     rospy.Subscriber("cmd_vel", Twist, twistCallback)
     rate = rospy.Rate(100)
 
-    pub = rospy.Publisher("/odom", Odometry, queue_size=10)
-    frame_id = "/odom"
-    child_frame_id = "/base_link"
+    odometry_publisher = OdometryPub()
 
-    #odom_broadcaster = tf.TransformBroadcaster()
+    #pub = rospy.Publisher("/odom", Odometry, queue_size=10)
+    #frame_id = "/odom"
+    #child_frame_id = "/base_link"
+
+    ######odom_broadcaster = tf.TransformBroadcaster()
 
     connected = False
 
@@ -174,21 +238,22 @@ def twistListener():
                     # print encoders
                     wheel_callback(int(encoders[1]), int(encoders[2]))
 
-                    msg = Odometry()
-                    msg.header.stamp = current_time
-                    msg.header.frame_id = "odom"
-                    msg.child_frame_id = "base_link"
+                    #msg = Odometry()
+                    #msg.header.stamp = current_time
+                    #msg.header.frame_id = "odom"
+                    #msg.child_frame_id = "base_link"
 
-                    msg.pose.pose.position = Point(x, y, 0.0)
-                    q = tf.transformations.quaternion_from_euler(0, 0, heading)
-                    msg.pose.pose.orientation = Quaternion(*q)
-                    #msg.twist.twist.linear = Point(vx, vy, 0.0)
-                    #msg.twist.twist.angular.x = 0.0
-                    #msg.twist.twist.angular.y = 0.0
-                    #msg.twist.twist.angular.z = vth
+                    #msg.pose.pose.position = Point(x, y, 0.0)
+                    #q = tf.transformations.quaternion_from_euler(0, 0, heading)
+                    #msg.pose.pose.orientation = Quaternion(*q)
+                    ####msg.twist.twist.linear = Point(vx, vy, 0.0)
+                    ####msg.twist.twist.angular.x = 0.0
+                    ####msg.twist.twist.angular.y = 0.0
+                    ###msg.twist.twist.angular.z = vth
 
                     # publish odometry and send drive command
-                    pub.publish(msg)
+                    #pub.publish(msg)
+                    odometry_publisher.update()
                     ser.write((str(DRIVE_MSG) + "\n").encode())
                     ser.write((str(globalLeftVelocity) + "\t" + str(globalRightVelocity) + "\n").encode())
 
