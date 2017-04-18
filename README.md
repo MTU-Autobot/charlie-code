@@ -46,4 +46,6 @@ This will let you SSH into the robot by using ```ssh ubuntu@charlie``` instead o
 
 # Power Diagram
 Here is a flowchart showing the power distribution on the robot
-![Power Distribution](Power Diagram.svg)
+
+![Power Distribution](images/Power Diagram.svg)
+![Power Distribution](images/Power Diagram.png)
