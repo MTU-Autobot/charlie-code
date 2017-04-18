@@ -48,5 +48,5 @@ This will let you SSH into the robot by using ```ssh ubuntu@charlie``` instead o
 Here is a flowchart showing the power distribution on the robot
 
 <div align="center">
-  <img src="images/Power Diagram.svg" alt="Power Diagram" width="800px">
+  <img src="images/Power Diagram.png" alt="Power Diagram" width="800px">
 </div>
