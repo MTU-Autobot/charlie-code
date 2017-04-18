@@ -43,3 +43,7 @@ Add the robot to your ```\etc\hosts``` file with the lines
 ```
 
 This will let you SSH into the robot by using ```ssh ubuntu@charlie``` instead of ```ssh ubuntu@141.219.120.14```
+
+# Power Diagram
+Here is a flowchart showing the power distribution on the robot
+![Power Distribution](Power Diagram.svg)
