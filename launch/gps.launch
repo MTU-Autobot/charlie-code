@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="tf" type="static_transform_publisher" name="transform_publisher" args="-382783 -5219575 -261 0 0 0 1 /map /gps 20" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="transform_gps_publisher" args="0 0 0 0 0 0 1 /odom /gps 20" /> -->
+    <node pkg="gps_common" type="utm_odometry_node" name="gps_odom">
+        <remap from="fix" to="gps/fix"/>
+        <param name="child_frame_id" value="place"/>
+    </node>
+</launch>
