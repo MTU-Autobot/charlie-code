@@ -87,8 +87,8 @@ with open("gps_waypoints.txt") as f:
 	for line in f:
 		coordinateList.append(line.split(" ", 2))
 
-print "Coordinate List:"
-print str(coordinateList)
+print("Coordinate List:")
+print(str(coordinateList))
 
 while waypointCount < len(coordinateList):
 	
@@ -108,10 +108,10 @@ while waypointCount < len(coordinateList):
 			continue
 		nextCoordinates[0] = float(coordinateList[waypointCount][0])
 		nextCoordinates[1] = float(coordinateList[waypointCount][1])
-		print "Current GPS Coordinates:"
-		print str(currentCoordinates)
-		print "Target GPS Coordinates:"
-		print str(nextCoordinates)
+		print("Current GPS Coordinates:")
+		print(str(currentCoordinates))
+		print("Target GPS Coordinates:")
+		print(str(nextCoordinates))
 		
 		# Calculate next waypoint. It will be a distance from Charlie's current location
 		nextWaypoint = degreesToMeters(nextCoordinates[0] - currentCoordinates[0], nextCoordinates[1] - currentCoordinates[1], nextCoordinates[0])
@@ -120,8 +120,8 @@ while waypointCount < len(coordinateList):
 		temp = (nextWaypoint[1] * math.sin(currentOrientation)) + (nextWaypoint[0] * math.cos(currentOrientation))
 		nextWaypoint[1] = (nextWaypoint[1] * math.cos(currentOrientation)) - (nextWaypoint[0] * math.sin(currentOrientation))
 		nextWaypoint[0] = temp
-		print "Next Waypoint:"
-		print str(nextWaypoint)
+		print("Next Waypoint:")
+		print(str(nextWaypoint))
 		
 		currentCoordinates[0] = nextCoordinates[0]
 		currentCoordinates[1] = nextCoordinates[1]
